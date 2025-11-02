@@ -10,7 +10,8 @@ class AddVisitScreen extends StatefulWidget {
 class _AddVisitScreenState extends State<AddVisitScreen> {
   final VisitController visitController = VisitController();
   final CustomerController customerController = CustomerController();
-  final TextEditingController customerSearchController = TextEditingController();
+  final TextEditingController customerSearchController =
+      TextEditingController();
 
   List<CustomerModel> customers = [];
   CustomerModel? selectedCustomer;
@@ -19,7 +20,7 @@ class _AddVisitScreenState extends State<AddVisitScreen> {
   File? selectedImage;
 
   Timer? _debounceTimer;
-  
+
   @override
   void initState() {
     super.initState();
@@ -27,10 +28,10 @@ class _AddVisitScreenState extends State<AddVisitScreen> {
     // Set default location values
     visitController.latitudeController.text = '0.0';
     visitController.longitudeController.text = '0.0';
-    
+
     // Add listener to address field for auto-geocoding with proper debouncing
     visitController.addressController.addListener(_onAddressChanged);
-    
+
     // Automatically get current location when page loads
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _getCurrentLocationSilently();
@@ -40,7 +41,7 @@ class _AddVisitScreenState extends State<AddVisitScreen> {
   void _onAddressChanged() {
     // Cancel previous timer
     _debounceTimer?.cancel();
-    
+
     // Start new timer
     _debounceTimer = Timer(const Duration(milliseconds: 800), () {
       if (mounted) {
@@ -70,24 +71,29 @@ class _AddVisitScreenState extends State<AddVisitScreen> {
 
   Future<void> _updateCoordinatesFromAddress() async {
     String address = visitController.addressController.text.trim();
-    
+
     // Don't geocode very short addresses or empty addresses
-    if (address.length < 15) return; 
-    
+    if (address.length < 15) return;
+
     try {
       // Show subtle loading indicator
       setState(() {
         isAutoDetectingLocation = true;
       });
-      
+
       // Get coordinates from address
-      Map<String, double?> coordinates = await LocationService.getCoordinatesFromAddress(address);
-      
-      if (coordinates['latitude'] != null && coordinates['longitude'] != null && mounted) {
+      Map<String, double?> coordinates =
+          await LocationService.getCoordinatesFromAddress(address);
+
+      if (coordinates['latitude'] != null &&
+          coordinates['longitude'] != null &&
+          mounted) {
         // Update coordinate fields
         setState(() {
-          visitController.latitudeController.text = coordinates['latitude']!.toStringAsFixed(6);
-          visitController.longitudeController.text = coordinates['longitude']!.toStringAsFixed(6);
+          visitController.latitudeController.text = coordinates['latitude']!
+              .toStringAsFixed(6);
+          visitController.longitudeController.text = coordinates['longitude']!
+              .toStringAsFixed(6);
         });
 
         // Show subtle success notification
@@ -97,7 +103,11 @@ class _AddVisitScreenState extends State<AddVisitScreen> {
             SnackBar(
               content: Row(
                 children: [
-                  const Icon(Icons.location_searching, color: Colors.blue, size: 16),
+                  const Icon(
+                    Icons.location_searching,
+                    color: Colors.blue,
+                    size: 16,
+                  ),
                   const SizedBox(width: 8),
                   const Expanded(
                     child: Text('Coordinates auto-updated from address!'),
@@ -107,11 +117,7 @@ class _AddVisitScreenState extends State<AddVisitScreen> {
               backgroundColor: Colors.blue.shade700,
               duration: const Duration(seconds: 2),
               behavior: SnackBarBehavior.floating,
-              margin: const EdgeInsets.only(
-                bottom: 80,
-                left: 16,
-                right: 16,
-              ),
+              margin: const EdgeInsets.only(bottom: 80, left: 16, right: 16),
             ),
           );
         }
@@ -133,7 +139,7 @@ class _AddVisitScreenState extends State<AddVisitScreen> {
       setState(() {
         isAutoDetectingLocation = true;
       });
-      
+
       // Check permissions quietly
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {
@@ -142,7 +148,7 @@ class _AddVisitScreenState extends State<AddVisitScreen> {
         });
         return; // Fail silently if GPS is disabled
       }
-      
+
       LocationPermission permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
@@ -153,33 +159,36 @@ class _AddVisitScreenState extends State<AddVisitScreen> {
           return; // Fail silently
         }
       }
-      
+
       if (permission == LocationPermission.deniedForever) {
         setState(() {
           isAutoDetectingLocation = false;
         });
         return; // Fail silently
       }
-      
+
       // Get position quietly with medium accuracy for speed
-      Position position = await Geolocator.getCurrentPosition(
-        locationSettings: const LocationSettings(
-          accuracy: LocationAccuracy.medium,
-          distanceFilter: 0,
-          timeLimit: Duration(seconds: 10),
-        ),
-      ).timeout(
-        const Duration(seconds: 10),
-        onTimeout: () {
-          throw Exception('Location timeout');
-        },
-      );
+      Position position =
+          await Geolocator.getCurrentPosition(
+            locationSettings: const LocationSettings(
+              accuracy: LocationAccuracy.medium,
+              distanceFilter: 0,
+              timeLimit: Duration(seconds: 10),
+            ),
+          ).timeout(
+            const Duration(seconds: 10),
+            onTimeout: () {
+              throw Exception('Location timeout');
+            },
+          );
 
       // Update coordinates
       if (mounted) {
         setState(() {
-          visitController.latitudeController.text = position.latitude.toString();
-          visitController.longitudeController.text = position.longitude.toString();
+          visitController.latitudeController.text = position.latitude
+              .toString();
+          visitController.longitudeController.text = position.longitude
+              .toString();
         });
       }
 
@@ -193,7 +202,7 @@ class _AddVisitScreenState extends State<AddVisitScreen> {
         if (placemarks.isNotEmpty && mounted) {
           Placemark place = placemarks[0];
           List<String> addressParts = [];
-          
+
           if (place.street != null && place.street!.isNotEmpty) {
             addressParts.add(place.street!);
           }
@@ -203,14 +212,15 @@ class _AddVisitScreenState extends State<AddVisitScreen> {
           if (place.locality != null && place.locality!.isNotEmpty) {
             addressParts.add(place.locality!);
           }
-          if (place.administrativeArea != null && place.administrativeArea!.isNotEmpty) {
+          if (place.administrativeArea != null &&
+              place.administrativeArea!.isNotEmpty) {
             addressParts.add(place.administrativeArea!);
           }
-          
-          String address = addressParts.isNotEmpty 
+
+          String address = addressParts.isNotEmpty
               ? addressParts.join(', ')
               : 'Lat: ${position.latitude.toStringAsFixed(6)}, Lng: ${position.longitude.toStringAsFixed(6)}';
-          
+
           setState(() {
             visitController.addressController.text = address;
           });
@@ -248,7 +258,6 @@ class _AddVisitScreenState extends State<AddVisitScreen> {
         // Address geocoding failed, but we still have coordinates
         debugPrint('Silent geocoding failed: $e');
       }
-
     } catch (e) {
       // Fail silently - don't show error messages for automatic location
       debugPrint('Silent location failed: $e');
@@ -260,8 +269,6 @@ class _AddVisitScreenState extends State<AddVisitScreen> {
       }
     }
   }
-
-
 
   Future<void> _pickImage() async {
     try {
@@ -374,122 +381,162 @@ class _AddVisitScreenState extends State<AddVisitScreen> {
                           Autocomplete<CustomerModel>(
                             displayStringForOption: (CustomerModel option) =>
                                 option.cUSTOMERNAME ?? 'Unknown Customer',
-                            optionsBuilder: (TextEditingValue textEditingValue) {
-                              if (textEditingValue.text == '') {
-                                return const Iterable<CustomerModel>.empty();
-                              }
-                              return customers.where((CustomerModel option) {
-                                return (option.cUSTOMERNAME ?? '')
-                                    .toLowerCase()
-                                    .contains(textEditingValue.text.toLowerCase());
-                              });
-                            },
+                            optionsBuilder:
+                                (TextEditingValue textEditingValue) {
+                                  if (textEditingValue.text == '') {
+                                    return const Iterable<
+                                      CustomerModel
+                                    >.empty();
+                                  }
+                                  return customers.where((
+                                    CustomerModel option,
+                                  ) {
+                                    return (option.cUSTOMERNAME ?? '')
+                                        .toLowerCase()
+                                        .contains(
+                                          textEditingValue.text.toLowerCase(),
+                                        );
+                                  });
+                                },
                             onSelected: (CustomerModel selection) {
                               setState(() {
                                 selectedCustomer = selection;
-                                customerSearchController.text = 
+                                customerSearchController.text =
                                     selection.cUSTOMERNAME ?? '';
-                               
-                               
                               });
                             },
-                            fieldViewBuilder: (BuildContext context,
-                                TextEditingController fieldTextEditingController,
-                                FocusNode fieldFocusNode,
-                                VoidCallback onFieldSubmitted) {
-                              // Sync with our controller
-                              if (customerSearchController.text.isNotEmpty && 
-                                  fieldTextEditingController.text.isEmpty) {
-                                fieldTextEditingController.text = 
-                                    customerSearchController.text;
-                              }
-                              
-                              return TextFormField(
-                                controller: fieldTextEditingController,
-                                focusNode: fieldFocusNode,
-                                decoration: InputDecoration(
-                                  labelText: 'Search Customer *',
-                                  hintText: 'Type customer name...',
-                                  prefixIcon: const Icon(Ionicons.person_outline),
-                                  suffixIcon: fieldTextEditingController.text.isNotEmpty
-                                      ? IconButton(
-                                          icon: const Icon(Icons.clear),
-                                          onPressed: () {
-                                            fieldTextEditingController.clear();
-                                            customerSearchController.clear();
-                                            setState(() {
-                                              selectedCustomer = null;
-                                              // Alamat tidak dihapus saat clear customer
-                                            });
-                                          },
-                                        )
-                                      : const Icon(Ionicons.search_outline),
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8.0),
-                                  ),
-                                ),
-                                validator: (value) {
-                                  if (selectedCustomer == null) {
-                                    return 'Please select a customer';
+                            fieldViewBuilder:
+                                (
+                                  BuildContext context,
+                                  TextEditingController
+                                  fieldTextEditingController,
+                                  FocusNode fieldFocusNode,
+                                  VoidCallback onFieldSubmitted,
+                                ) {
+                                  // Sync with our controller
+                                  if (customerSearchController
+                                          .text
+                                          .isNotEmpty &&
+                                      fieldTextEditingController.text.isEmpty) {
+                                    fieldTextEditingController.text =
+                                        customerSearchController.text;
                                   }
-                                  return null;
+
+                                  return TextFormField(
+                                    controller: fieldTextEditingController,
+                                    focusNode: fieldFocusNode,
+                                    decoration: InputDecoration(
+                                      labelText: 'Search Customer *',
+                                      hintText: 'Type customer name...',
+                                      prefixIcon: const Icon(
+                                        Ionicons.person_outline,
+                                      ),
+                                      suffixIcon:
+                                          fieldTextEditingController
+                                              .text
+                                              .isNotEmpty
+                                          ? IconButton(
+                                              icon: const Icon(Icons.clear),
+                                              onPressed: () {
+                                                fieldTextEditingController
+                                                    .clear();
+                                                customerSearchController
+                                                    .clear();
+                                                setState(() {
+                                                  selectedCustomer = null;
+                                                  // Alamat tidak dihapus saat clear customer
+                                                });
+                                              },
+                                            )
+                                          : const Icon(Ionicons.search_outline),
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(
+                                          8.0,
+                                        ),
+                                      ),
+                                    ),
+                                    validator: (value) {
+                                      if (selectedCustomer == null) {
+                                        return 'Please select a customer';
+                                      }
+                                      return null;
+                                    },
+                                  );
                                 },
-                              );
-                            },
-                            optionsViewBuilder: (BuildContext context,
-                                AutocompleteOnSelected<CustomerModel> onSelected,
-                                Iterable<CustomerModel> options) {
-                              return Align(
-                                alignment: Alignment.topLeft,
-                                child: Material(
-                                  elevation: 4.0,
-                                  child: ConstrainedBox(
-                                    constraints: const BoxConstraints(
-                                      maxHeight: 200,
-                                      maxWidth: 300,
+                            optionsViewBuilder:
+                                (
+                                  BuildContext context,
+                                  AutocompleteOnSelected<CustomerModel>
+                                  onSelected,
+                                  Iterable<CustomerModel> options,
+                                ) {
+                                  return Align(
+                                    alignment: Alignment.topLeft,
+                                    child: Material(
+                                      elevation: 4.0,
+                                      child: ConstrainedBox(
+                                        constraints: const BoxConstraints(
+                                          maxHeight: 200,
+                                          maxWidth: 300,
+                                        ),
+                                        child: ListView.builder(
+                                          padding: EdgeInsets.zero,
+                                          shrinkWrap: true,
+                                          itemCount: options.length,
+                                          itemBuilder:
+                                              (
+                                                BuildContext context,
+                                                int index,
+                                              ) {
+                                                final CustomerModel option =
+                                                    options.elementAt(index);
+                                                return ListTile(
+                                                  leading: CircleAvatar(
+                                                    backgroundColor:
+                                                        const Color(0xFF7A0000),
+                                                    radius: 16,
+                                                    child: Text(
+                                                      (option.cUSTOMERNAME ??
+                                                              'C')
+                                                          .substring(0, 1)
+                                                          .toUpperCase(),
+                                                      style: const TextStyle(
+                                                        color: Colors.white,
+                                                        fontSize: 12,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  title: Text(
+                                                    option.cUSTOMERNAME ??
+                                                        'Unknown Customer',
+                                                    style: const TextStyle(
+                                                      fontSize: 14,
+                                                    ),
+                                                  ),
+                                                  subtitle:
+                                                      option.cUSTOMEREMAIL !=
+                                                          null
+                                                      ? Text(
+                                                          option.cUSTOMEREMAIL!,
+                                                          style:
+                                                              const TextStyle(
+                                                                fontSize: 12,
+                                                              ),
+                                                        )
+                                                      : null,
+                                                  dense: true,
+                                                  onTap: () {
+                                                    onSelected(option);
+                                                  },
+                                                );
+                                              },
+                                        ),
+                                      ),
                                     ),
-                                    child: ListView.builder(
-                                      padding: EdgeInsets.zero,
-                                      shrinkWrap: true,
-                                      itemCount: options.length,
-                                      itemBuilder: (BuildContext context, int index) {
-                                        final CustomerModel option = options.elementAt(index);
-                                        return ListTile(
-                                          leading: CircleAvatar(
-                                            backgroundColor: const Color(0xFF7A0000),
-                                            radius: 16,
-                                            child: Text(
-                                              (option.cUSTOMERNAME ?? 'C')
-                                                  .substring(0, 1)
-                                                  .toUpperCase(),
-                                              style: const TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 12,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            ),
-                                          ),
-                                          title: Text(
-                                            option.cUSTOMERNAME ?? 'Unknown Customer',
-                                            style: const TextStyle(fontSize: 14),
-                                          ),
-                                          subtitle: option.cUSTOMEREMAIL != null
-                                              ? Text(
-                                                  option.cUSTOMEREMAIL!,
-                                                  style: const TextStyle(fontSize: 12),
-                                                )
-                                              : null,
-                                          dense: true,
-                                          onTap: () {
-                                            onSelected(option);
-                                          },
-                                        );
-                                      },
-                                    ),
-                                  ),
-                                ),
-                              );
-                            },
+                                  );
+                                },
                           ),
                         ],
                       ),
@@ -547,8 +594,9 @@ class _AddVisitScreenState extends State<AddVisitScreen> {
                             maxLines: 2,
                             decoration: InputDecoration(
                               labelText: 'Address Description',
-                              hintText: 'Enter full address (e.g., Jl. Sudirman No.1, Jakarta)',
-                              prefixIcon: isAutoDetectingLocation 
+                              hintText:
+                                  'Enter full address (e.g., Jl. Sudirman No.1, Jakarta)',
+                              prefixIcon: isAutoDetectingLocation
                                   ? SizedBox(
                                       width: 20,
                                       height: 20,
@@ -556,21 +604,33 @@ class _AddVisitScreenState extends State<AddVisitScreen> {
                                         padding: const EdgeInsets.all(12.0),
                                         child: CircularProgressIndicator(
                                           strokeWidth: 2,
-                                          valueColor: AlwaysStoppedAnimation<Color>(
-                                            Colors.blue.shade600,
-                                          ),
+                                          valueColor:
+                                              AlwaysStoppedAnimation<Color>(
+                                                Colors.blue.shade600,
+                                              ),
                                         ),
                                       ),
                                     )
                                   : const Icon(Ionicons.location_outline),
-                              suffixIcon: visitController.addressController.text.isNotEmpty
+                              suffixIcon:
+                                  visitController
+                                      .addressController
+                                      .text
+                                      .isNotEmpty
                                   ? IconButton(
                                       icon: const Icon(Icons.clear, size: 20),
                                       onPressed: () {
-                                        visitController.addressController.clear();
+                                        visitController.addressController
+                                            .clear();
                                         setState(() {
-                                          visitController.latitudeController.text = '0.0';
-                                          visitController.longitudeController.text = '0.0';
+                                          visitController
+                                                  .latitudeController
+                                                  .text =
+                                              '0.0';
+                                          visitController
+                                                  .longitudeController
+                                                  .text =
+                                              '0.0';
                                         });
                                       },
                                     )
@@ -662,9 +722,10 @@ class _AddVisitScreenState extends State<AddVisitScreen> {
                                       height: 12,
                                       child: CircularProgressIndicator(
                                         strokeWidth: 2,
-                                        valueColor: AlwaysStoppedAnimation<Color>(
-                                          Colors.blue.shade700,
-                                        ),
+                                        valueColor:
+                                            AlwaysStoppedAnimation<Color>(
+                                              Colors.blue.shade700,
+                                            ),
                                       ),
                                     ),
                                     const SizedBox(width: 6),
@@ -685,11 +746,15 @@ class _AddVisitScreenState extends State<AddVisitScreen> {
                             children: [
                               Expanded(
                                 child: TextField(
-                                  controller: visitController.latitudeController,
+                                  controller:
+                                      visitController.latitudeController,
                                   readOnly: true,
                                   decoration: InputDecoration(
                                     labelText: 'Latitude',
-                                    prefixIcon: const Icon(Icons.my_location, size: 18),
+                                    prefixIcon: const Icon(
+                                      Icons.my_location,
+                                      size: 18,
+                                    ),
                                     border: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(8.0),
                                     ),
@@ -705,11 +770,15 @@ class _AddVisitScreenState extends State<AddVisitScreen> {
                               const SizedBox(width: 12),
                               Expanded(
                                 child: TextField(
-                                  controller: visitController.longitudeController,
+                                  controller:
+                                      visitController.longitudeController,
                                   readOnly: true,
                                   decoration: InputDecoration(
                                     labelText: 'Longitude',
-                                    prefixIcon: const Icon(Icons.my_location, size: 18),
+                                    prefixIcon: const Icon(
+                                      Icons.my_location,
+                                      size: 18,
+                                    ),
                                     border: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(8.0),
                                     ),
