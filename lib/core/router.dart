@@ -20,6 +20,10 @@ class AppRouter {
         );
       case '/visit':
         return MaterialPageRoute(builder: (_) => VisitScreen());
+      case '/addVisit':
+        return MaterialPageRoute(builder: (_) => AddVisitScreen());
+      case '/customer':
+        return MaterialPageRoute(builder: (_) => CustomerScreen());
       case '/main_page':
         return MaterialPageRoute(builder: (_) => MainScreen());
 
