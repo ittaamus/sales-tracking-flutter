@@ -141,7 +141,29 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
                 Padding(
-                  padding: EdgeInsets.fromLTRB(0, 30, 0, 16),
+                  padding: EdgeInsets.fromLTRB(0, 0, 0, 16),
+                  child: Row(
+                    children: [
+                      Checkbox(
+                        value: loginController.rememberMe,
+                        onChanged: (value) {
+                          setState(() {
+                            loginController.setRememberMe(value ?? false);
+                          });
+                        },
+                      ),
+                      Text(
+                        "Remember Me",
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Color(0xff000000),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: EdgeInsets.fromLTRB(0, 16, 0, 16),
                   child: MaterialButton(
                     onPressed: () async {
                       bool success = await loginController.login();
