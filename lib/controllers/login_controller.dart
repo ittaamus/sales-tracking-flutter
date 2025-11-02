@@ -31,16 +31,19 @@ class LoginController {
     LoginModel user = LoginModel(uSERSNAME: username, uSERSPASS: password);
 
     bool loginSuccess = await _loginService.login(user);
-    
+
     if (loginSuccess) {
       // Save login status
       await SharedPreferencesService.setLoginStatus(true);
       await SharedPreferencesService.setUsername(username);
-      
+
       // Save credentials if remember me is checked
       if (rememberMe) {
         await SharedPreferencesService.setRememberMe(true);
-        await SharedPreferencesService.setRememberedCredentials(username, password);
+        await SharedPreferencesService.setRememberedCredentials(
+          username,
+          password,
+        );
       } else {
         await SharedPreferencesService.setRememberMe(false);
         await SharedPreferencesService.clearRememberedCredentials();

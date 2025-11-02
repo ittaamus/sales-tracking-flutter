@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:salesyuasa/config/base_config.dart';
 import 'package:salesyuasa/pages/library_page.dart';
 import 'package:salesyuasa/services/shared_preferences_service.dart';
 
@@ -18,7 +19,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Yuasa',
+      title: Constanta.appName,
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
