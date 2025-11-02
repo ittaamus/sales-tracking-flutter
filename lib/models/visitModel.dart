@@ -7,17 +7,18 @@ class VisitModel {
   String? lONGITUDE;
   String? iMAGESURL;
   String? nOTES;
+  String? dESKRIPSIALAMAT;
 
-  VisitModel({
-    this.vISITID,
-    this.vISITSALESID,
-    this.vISITCUSTID,
-    this.vISITTIME,
-    this.lATITUDE,
-    this.lONGITUDE,
-    this.iMAGESURL,
-    this.nOTES,
-  });
+  VisitModel(
+      {this.vISITID,
+      this.vISITSALESID,
+      this.vISITCUSTID,
+      this.vISITTIME,
+      this.lATITUDE,
+      this.lONGITUDE,
+      this.iMAGESURL,
+      this.nOTES,
+      this.dESKRIPSIALAMAT});
 
   VisitModel.fromJson(Map<String, dynamic> json) {
     vISITID = json['VISIT_ID'];
@@ -28,6 +29,7 @@ class VisitModel {
     lONGITUDE = json['LONGITUDE'];
     iMAGESURL = json['IMAGES_URL'];
     nOTES = json['NOTES'];
+    dESKRIPSIALAMAT = json['DESKRIPSI_ALAMAT'];
   }
 
   Map<String, dynamic> toJson() {
@@ -40,6 +42,7 @@ class VisitModel {
     data['LONGITUDE'] = this.lONGITUDE;
     data['IMAGES_URL'] = this.iMAGESURL;
     data['NOTES'] = this.nOTES;
+    data['DESKRIPSI_ALAMAT'] = this.dESKRIPSIALAMAT;
     return data;
   }
 }

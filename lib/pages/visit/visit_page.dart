@@ -10,13 +10,16 @@ class VisitScreen extends StatelessWidget {
       appBar: AppBar(title: const Text('Kunjungan Barang')),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
+          final added = await Navigator.pushNamed(context, '/addVisit');
+          if (added == true) visitController.loadData();  
+          
           // final added = await Navigator.push(
           //   context,
           //   MaterialPageRoute(builder: (_) => BarangAddScreen()),
           // );
           // if (added == true) barangController.reloadData();
         },
-        label: const Text('Add Barang'),
+        label: const Text('Add Kunjungan'),
         icon: const Icon(Icons.add),
       ),
       body: Column(
