@@ -25,20 +25,27 @@ class _AddVisitScreenState extends State<AddVisitScreen> {
   void initState() {
     super.initState();
     _loadCustomers();
+    
     // Set default location values
     visitController.latitudeController.text = '0.0';
     visitController.longitudeController.text = '0.0';
-
+    
+    // Set Sales ID from logged-in user
+    String userId = SharedPreferencesService.getUserId();
+    if (userId.isNotEmpty) {
+      visitController.salesIdController.text = userId;
+    } else {
+      visitController.salesIdController.text = '1'; // fallback
+    }
+    
     // Add listener to address field for auto-geocoding with proper debouncing
     visitController.addressController.addListener(_onAddressChanged);
-
+    
     // Automatically get current location when page loads
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _getCurrentLocationSilently();
     });
-  }
-
-  void _onAddressChanged() {
+  }  void _onAddressChanged() {
     // Cancel previous timer
     _debounceTimer?.cancel();
 
@@ -289,54 +296,113 @@ class _AddVisitScreenState extends State<AddVisitScreen> {
   }
 
   Future<void> _saveVisit() async {
+    // Show loading indicator
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return const Center(
+          child: CircularProgressIndicator(),
+        );
+      },
+    );
+
     // Validate required fields
     if (selectedCustomer == null) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Please select a customer')));
+      Navigator.pop(context); // Close loading dialog
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please select a customer')));
+      return;
+    }
+
+    if (selectedCustomer!.cUSTOMERID == null || selectedCustomer!.cUSTOMERID!.isEmpty) {
+      Navigator.pop(context); // Close loading dialog
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Invalid customer ID')));
       return;
     }
 
     if (visitController.notesController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Please enter visit notes')));
+      Navigator.pop(context); // Close loading dialog
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter visit notes')));
+      return;
+    }
+
+    // Validate coordinates
+    if (visitController.latitudeController.text.isEmpty || 
+        visitController.longitudeController.text.isEmpty ||
+        visitController.latitudeController.text == '0.0' ||
+        visitController.longitudeController.text == '0.0') {
+      Navigator.pop(context); // Close loading dialog
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please wait for location detection or enter address')));
       return;
     }
 
     try {
+      // Test connection first
+      print('=== TESTING CONNECTION ===');
+      VisitService visitService = VisitService();
+      bool connected = await visitService.testConnection();
+      print('Connection test result: $connected');
+      
+      // Debug logging
+      print('=== DEBUG SAVE VISIT ===');
+      print('Customer ID: ${selectedCustomer!.cUSTOMERID}');
+      print('Sales ID: ${visitController.salesIdController.text}');
+      print('Notes: ${visitController.notesController.text}');
+      print('Address: ${visitController.addressController.text}');
+      print('Latitude: ${visitController.latitudeController.text}');
+      print('Longitude: ${visitController.longitudeController.text}');
+      print('Image URL: ${visitController.imageUrlController.text}');
+
       // Create new visit model
       VisitModel newVisit = VisitModel(
         vISITSALESID: visitController.salesIdController.text.isNotEmpty
             ? visitController.salesIdController.text
-            : 'default_sales_id',
+            : '1',  // Use valid numeric ID as string
         vISITCUSTID: selectedCustomer!.cUSTOMERID,
         vISITTIME: DateTime.now().toIso8601String(),
-        lATITUDE: visitController.latitudeController.text,
-        lONGITUDE: visitController.longitudeController.text,
-        iMAGESURL: visitController.imageUrlController.text,
-        nOTES: visitController.notesController.text,
-        dESKRIPSIALAMAT: visitController.addressController.text,
+        lATITUDE: visitController.latitudeController.text.trim(),
+        lONGITUDE: visitController.longitudeController.text.trim(),
+        iMAGESURL: visitController.imageUrlController.text.trim(),
+        nOTES: visitController.notesController.text.trim(),
+        dESKRIPSIALAMAT: visitController.addressController.text.trim(),
       );
 
+      print('Visit Model created: ${newVisit.toJson()}');
+
       // Save visit using service
-      bool success = await VisitService().addVisit(newVisit);
+      bool success = await visitService.addVisit(newVisit);
+
+      Navigator.pop(context); // Close loading dialog
 
       if (success) {
+        print('Visit saved successfully to database!');
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Visit saved successfully!')),
+            const SnackBar(
+              content: Text('Visit saved successfully!'),
+              backgroundColor: Colors.green,
+            ),
           );
           Navigator.pop(context, true); // Return true to indicate success
         }
       } else {
+        print('Failed to save visit to database');
         if (mounted) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(const SnackBar(content: Text('Failed to save visit')));
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Failed to save visit. Please check your connection.'),
+              backgroundColor: Colors.red,
+            ),
+          );
         }
       }
     } catch (e) {
+      Navigator.pop(context); // Close loading dialog
+      print('Error saving visit: $e');
       if (mounted) {
         ScaffoldMessenger.of(
           context,
