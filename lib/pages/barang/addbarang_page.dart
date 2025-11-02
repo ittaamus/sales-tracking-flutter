@@ -85,7 +85,9 @@ class BarangAddScreen extends StatelessWidget {
               SizedBox(height: 16.0),
               ElevatedButton(
                 onPressed: () async {
-                   final success = await barangController.simpanDataBarang(context);
+                  final success = await barangController.simpanDataBarang(
+                    context,
+                  );
                   if (!context.mounted) return;
 
                   if (success) {
