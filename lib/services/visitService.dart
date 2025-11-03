@@ -77,18 +77,23 @@ class VisitService {
 
       // Create multipart request for form data (matching PHP $_POST expectations)
       var request = http.MultipartRequest('POST', url);
-      
+
       // Add form fields (matching PHP $_POST structure)
       request.fields['VISIT_SALES_ID'] = visit.vISITSALESID ?? '1';
       request.fields['VISIT_CUST_ID'] = visit.vISITCUSTID ?? '1';
-      request.fields['VISIT_TIME'] = DateTime.now().toIso8601String().replaceAll('T', ' ').substring(0, 19);
+      request.fields['VISIT_TIME'] = DateTime.now()
+          .toIso8601String()
+          .replaceAll('T', ' ')
+          .substring(0, 19);
       request.fields['LATITUDE'] = visit.lATITUDE ?? '0.0';
       request.fields['LONGITUDE'] = visit.lONGITUDE ?? '0.0';
       request.fields['NOTES'] = visit.nOTES ?? '';
       request.fields['DESKRIPSI_ALAMAT'] = visit.dESKRIPSIALAMAT ?? '';
 
       // Handle image file if exists
-      if (visit.iMAGESURL != null && visit.iMAGESURL!.isNotEmpty && visit.iMAGESURL != '') {
+      if (visit.iMAGESURL != null &&
+          visit.iMAGESURL!.isNotEmpty &&
+          visit.iMAGESURL != '') {
         // Check if it's a local file path
         if (File(visit.iMAGESURL!).existsSync()) {
           var imageFile = await http.MultipartFile.fromPath(
@@ -105,10 +110,14 @@ class VisitService {
       print('=== DEBUG API CALL - VISITKUNJUNGAN FORM DATA ===');
       print('URL: $url');
       print('Form Fields: ${request.fields}');
-      print('Files: ${request.files.map((f) => '${f.field}: ${f.filename}').join(', ')}');
+      print(
+        'Files: ${request.files.map((f) => '${f.field}: ${f.filename}').join(', ')}',
+      );
 
       // Send the request
-      var streamedResponse = await request.send().timeout(const Duration(seconds: 30));
+      var streamedResponse = await request.send().timeout(
+        const Duration(seconds: 30),
+      );
       var response = await http.Response.fromStream(streamedResponse);
 
       print('Response Status Code: ${response.statusCode}');
@@ -121,14 +130,15 @@ class VisitService {
         try {
           await Future.delayed(const Duration(seconds: 1)); // Wait a bit
           final verifyVisits = await fetchVisits();
-          
+
           // Check if our visit was added (look for matching data)
-          bool foundNewVisit = verifyVisits.any((v) => 
-            v.vISITSALESID == visit.vISITSALESID &&
-            v.vISITCUSTID == visit.vISITCUSTID &&
-            (v.nOTES?.contains(visit.nOTES ?? '') ?? false)
+          bool foundNewVisit = verifyVisits.any(
+            (v) =>
+                v.vISITSALESID == visit.vISITSALESID &&
+                v.vISITCUSTID == visit.vISITCUSTID &&
+                (v.nOTES?.contains(visit.nOTES ?? '') ?? false),
           );
-          
+
           if (foundNewVisit) {
             print('✅ VERIFICATION SUCCESS: Data found in database!');
             return true;
